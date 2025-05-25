@@ -24,8 +24,8 @@ jobs:
         working-directory: ./doodlestudent-main/front
 
       - name: Build Angular app
-        run: npm run build --if-present
-        working-directory: ./front
+        run: npm start
+        working-directory: ./doodlestudent-main/front
 
       - name: Run tests
         run: npm test -- --watch=false --browsers=ChromeHeadless

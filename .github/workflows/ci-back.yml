@@ -2,7 +2,7 @@ name: Backend CI/CD - Quarkus
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
     paths: 
       - 'api/**'
       - '.github/workflows/ci-back.yml'
