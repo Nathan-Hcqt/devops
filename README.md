@@ -40,6 +40,7 @@ Afin de mettre en place GitHub Actions nous devons créer un dossier .github/wor
 
 Dans ce fichier nous avons tout d’abord l’en-tête avec le nom du workflow suivit par le section on qui déclenche le workflow selon les conditions voulue. Ici il est déclenché lorsqu'un push est effectué avec un modification  dans le dossier api du backend ou une modification de ce même fichier. Il est aussi déclenché lors d’une pull request ciblant la branche main. La balise workflow_dispatch: permet de le lancer manuellement depuis GitHub
 
+```yml
  name: Backend CI/CD - Quarkus
 
  on:
@@ -53,20 +54,21 @@ Dans ce fichier nous avons tout d’abord l’en-tête avec le nom du workflow s
     paths:
       - 'api/**'
   workflow_dispatch:
-
+```
 
 Ensuite la Balise env: qui configure les variables d’environnements, ici on utilise java, maven et docker.
 
+```yml
  env:
   JAVA_VERSION: '17'
   MAVEN_OPTS: '-Xmx1024m'
   DOCKER: 'docker.io'
   DOCKER_COMPOSE: 'docker-compose'
-
+```
 
 
 Puis on a la balise jobs: qui va indiquer toutes les tâches à faire lors du déclenchement du workflow. On précise ici le nom et la version de la VM Ubuntu GitHub-hostée qui effectue le script. On précise aussi le dossier ou le workflow doit opérer.
-
+```yml
  jobs:
   test:
     name: Tests Backend
@@ -74,9 +76,11 @@ Puis on a la balise jobs: qui va indiquer toutes les tâches à faire lors du d�
     defaults:
       run:
         working-directory: ./doodlestudent-main/api
-
+```
 
 Nous voici maintenant aux étapes du job. Les étapes sont annoncées dans le fichier par une balise name: et uses: qui définissent leurs noms et leurs actions.
+
+```yml
  steps:
 
 
@@ -130,6 +134,7 @@ Nous voici maintenant aux étapes du job. Les étapes sont annoncées dans le fi
     # Stop the application
       - name: Stop the application
         run: docker compose down
+```
 
 Les étapes ici sont : 
 Checkout code : Récupère le code source du projet 
@@ -145,7 +150,7 @@ Stop the application
 Avec ce fichier workflow on va donc initialiser l’application backend sur une machine Ubuntu à chaque push ou pull request et effectuer des tests unitaires. Cela permet de vérifier le bon fonctionnement du backend après chaque modification.
 
 ## Le fichier ci-front.yml 
-
+```yml
  name: CI Front Angular
 
 
@@ -199,6 +204,7 @@ Avec ce fichier workflow on va donc initialiser l’application backend sur une 
     # Running unit tests
       - name: Running unit tests
         run : npx ng test --watch=false --browsers=ChromeHeadless
+```
 
 Le fichier pour le front est sensiblement le même mais adapté au déploiement de l’application front.
 
