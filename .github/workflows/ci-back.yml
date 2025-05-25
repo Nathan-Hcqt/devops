@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,11 +20,23 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: maven
 
-      - name: Build with Maven
-        run: ./mvnw clean package -DskipTests
+      - name: Start Docker dependencies
+        run: docker-compose up -d
+        working-directory: ./api
+
+      - name: Wait for services (sleep)
+        run: sleep 15
+
+      - name: Build with Maven (including tests)
+        run: ./mvnw clean package
         working-directory: ./api
 
       - name: Run tests
         run: ./mvnw test
+        working-directory: ./api
+
+      - name: Stop Docker dependencies
+        run: docker-compose down
         working-directory: ./api
