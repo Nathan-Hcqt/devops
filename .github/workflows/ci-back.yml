@@ -52,7 +52,7 @@ jobs:
     
     # Running the application in dev mode 
       - name : Running the application in dev mode
-        run: docker-compose up --detach
+        run: docker compose up --detach
     
     # Wait the correct start of the application
       - name: Wait for the application to start
@@ -70,6 +70,5 @@ jobs:
     
     # Stop the application
       - name: Stop the application
-        run: docker-compose down
-    
+        run: docker compose down
     
