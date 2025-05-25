@@ -1,22 +1,26 @@
-# Introduction
+## Introduction
 
 DoodleStudent est une application collaborative, pensée pour simplifier l’organisation d’événements et la gestion de sondages au sein de groupes. 
 Cette application a été prise comme base intitiale pour notre projet “Software Bots in Software Engineering”, terme désignant un agent logiciel autonome, capable d’automatiser des tâches répétitives, d’interagir avec les utilisateurs et d’améliorer l’efficacité des processus collaboratifs.
 
 
-# L’architecture technique de DoodleStudent repose sur :
+## L’architecture technique de DoodleStudent repose sur :
 
-Backend : développé avec Quarkus (Java), il gère la logique métier, l’accès aux données (MySQL), l’authentification, la gestion des sondages, des utilisateurs, des préférences et des commentaires.
-Frontend : construit avec Angular, il offre une interface utilisateur moderne, réactive et accessible, permettant à chaque membre du groupe de participer facilement aux sondages et discussions.
+## Backend : 
+Développé avec Quarkus (Java), il gère la logique métier, l’accès aux données (MySQL), l’authentification, la gestion des sondages, des utilisateurs, des préférences et des commentaires.
+## Frontend : 
+Construit avec Angular, il offre une interface utilisateur moderne, réactive et accessible, permettant à chaque membre du groupe de participer facilement aux sondages et discussions.
 Services complémentaires : intégration d’Etherpad pour la coédition de texte, et d’un serveur mail pour les notifications automatiques.
 
-GitHub Actions permet d’automatiser l’ensemble du cycle de vie du développement logiciel :
+## GitHub Actions 
+Permet d’automatiser l’ensemble du cycle de vie du développement logiciel :
 À chaque modification du code (push ou pull request), des workflows sont déclenchés instantanément pour builder, tester et valider le projet.
 Ces workflows assurent que chaque contribution respecte les standards de qualité, que les tests passent, et que le projet reste stable et fonctionnel.
 Les résultats des builds et des tests sont visibles en temps réel dans l’onglet "Actions" du dépôt GitHub, permettant ainsi une meilleure collaboration, la transparence et la réactivité de l’équipe.
 L’intégration de GitHub Actions apporte de nombreux bénéfices :
 
-Automatisation : plus besoin de lancer manuellement les tests ou les builds, tout est fait automatiquement à chaque modification.
+## Automatisation : 
+Plus besoin de lancer manuellement les tests ou les builds, tout est fait automatiquement à chaque modification.
 Qualité : chaque commit est validé par une série de tests, ce qui limite les régressions et garantit la robustesse du projet.
 Collaboration : chaque membre de l’équipe est informé en temps réel de l’état du projet, ce qui facilite la gestion des contributions et la résolution rapide des problèmes.
 
@@ -27,19 +31,18 @@ Collaboration : chaque membre de l’équipe est informé en temps réel de l�
 
 L’objectif de GitHub Actions est donc de réaliser des tests, la construction d’un projet, son déploiement ou tout autre script que l’on veut exécuter lors d’actions précises comme un push ou un pull request.
 
-Structure du projet : 
+## Structure du projet : 
 
 Afin de mettre en place GitHub Actions nous devons créer un dossier .github/workflows/ à la racine du projet. Dans ce dossier nous stockerons tous les fichiers de workflows en .yml ou .yaml. Nous avons utilisé dans le projet deux fichiers : ci-back.yml et ci-front.yml qui sont voués à tester le back Quarkus et le front Angular du projet Doodle fournit.
 
-Le fichier ci-back.yml : 
+## Le fichier ci-back.yml : 
 
 
 Dans ce fichier nous avons tout d’abord l’en-tête avec le nom du workflow suivit par le section on qui déclenche le workflow selon les conditions voulue. Ici il est déclenché lorsqu'un push est effectué avec un modification  dans le dossier api du backend ou une modification de ce même fichier. Il est aussi déclenché lors d’une pull request ciblant la branche main. La balise workflow_dispatch: permet de le lancer manuellement depuis GitHub
 
-name: Backend CI/CD - Quarkus
+ name: Backend CI/CD - Quarkus
 
-
-on:
+ on:
   push:
     branches: [ main ]
     paths:
@@ -53,7 +56,8 @@ on:
 
 
 Ensuite la Balise env: qui configure les variables d’environnements, ici on utilise java, maven et docker.
-env:
+
+ env:
   JAVA_VERSION: '17'
   MAVEN_OPTS: '-Xmx1024m'
   DOCKER: 'docker.io'
@@ -63,7 +67,7 @@ env:
 
 Puis on a la balise jobs: qui va indiquer toutes les tâches à faire lors du déclenchement du workflow. On précise ici le nom et la version de la VM Ubuntu GitHub-hostée qui effectue le script. On précise aussi le dossier ou le workflow doit opérer.
 
-jobs:
+ jobs:
   test:
     name: Tests Backend
     runs-on: ubuntu-latest
@@ -73,8 +77,7 @@ jobs:
 
 
 Nous voici maintenant aux étapes du job. Les étapes sont annoncées dans le fichier par une balise name: et uses: qui définissent leurs noms et leurs actions.
-
-steps:
+ steps:
 
 
     # Checkout code
@@ -199,7 +202,7 @@ jobs:
 Le fichier pour le front est sensiblement le même mais adapté au déploiement de l’application front.
 
 
-
+## Résultats
 Maintenant que nos fichiers workflow sont créés, nous pouvons nous rendre dans GitHub dans la section actions de notre projet pour observer nos résultats.
 
 Dans cette section on peut observer que les fichiers workflow se déclenchent bien lors d’un push. On remarque aussi directement le résultat des tests.
