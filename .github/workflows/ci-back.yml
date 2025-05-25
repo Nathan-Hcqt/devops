@@ -24,7 +24,7 @@ jobs:
 
       - name: Start Docker dependencies
         run: docker-compose up -d
-        working-directory: ./api
+        working-directory: ./doodlestudent-main/api
 
       - name: Wait for services (sleep)
         run: sleep 15
