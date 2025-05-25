@@ -225,3 +225,8 @@ Pour la partie du front on a donc une erreur lors de la lecture du fichier.
 On accède donc aux détails pour vérifier dans quelle section l'erreur a lieu. Cela peut être une erreur dans l’écriture du workflow ou lors d’une installation ou encore un erreur lors des tests.
 
 On remarque donc que l’erreur est due aux tests unitaires. Ici certaines propriétés sont absentes et donc on peut conclure qu’un problème lors de la dernière mise à jour est arrivé.
+
+
+## Conclusion
+
+Lors de ce projet nous avons pu mettre en place un service de software bots afin de tester le déploiement de l'application doodle fournit. Nous avons eu quelques problèmes notamment pour comprendre comment utiliser GitHub actions. Cependant une fois le fonctionnement compris il était facile de modifier et d'améliorer nos workflow. Ce tp nous a permis de comprendre comment une méthode DevOps peut servir concrètement à la réalisation d'un projet. Comme ici, automatiser les tests permet de gagner du temps, de la qualité et de repérer rapidement une erreur lors d'une modification.
