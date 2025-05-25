@@ -49,11 +49,6 @@ jobs:
       - name: Running unit tests 
         run : npx ng test --watch=false --browsers=ChromeHeadless
 
-    # Uploading test results
-      - name: Upload test results
-        uses: actions/upload-artifact@v3.1.3
-        with:
-          name: doodlestudent-main/front/test-results 
       
     
 
