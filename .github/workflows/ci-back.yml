@@ -1,42 +1,65 @@
-name: CI Back Quarkus
+name: Backend CI/CD - Quarkus
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
+    paths: 
+      - 'api/**'
+      - '.github/workflows/ci-back.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'api/**'
   workflow_dispatch:
 
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx1024m'
+
 jobs:
-  build:
+  test:
+    name: Tests Backend
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
 
-      - name: Start Docker dependencies
-        run: docker-compose up -d
-        working-directory: ./doodlestudent-main/api
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-      - name: Wait for services (sleep)
-        run: sleep 15
+      - name: Build and run tests
+        run: mvn clean verify -B
 
-      - name: Build with Maven (including tests)
-        run: ./mvnw clean package
-        working-directory: ./api
-
-      - name: Run tests
-        run: ./mvnw test
-        working-directory: ./api
-
-      - name: Stop Docker dependencies
-        run: docker-compose down
-        working-directory: ./api
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: target/surefire-reports/
