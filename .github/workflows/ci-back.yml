@@ -1,52 +1,42 @@
-name: Backend CI/CD - Quarkus
+name: CI Back Quarkus
 
 on:
   push:
-    branches: [ main, develop ]
-    paths: 
-      - 'api/**'
-      - '.github/workflows/ci-back.yml'
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-    paths:
-      - 'api/**'
   workflow_dispatch:
 
-env:
-  JAVA_VERSION: '17'
-  MAVEN_OPTS: '-Xmx1024m'
-
 jobs:
-  test:
-    name: Tests Backend
+  build:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testdb
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
+      - name: Start Docker dependencies
+        run: docker-compose up -d
+        working-directory: ./doodlestudent-main/api
+
+      - name: Wait for services (sleep)
+        run: sleep 15
+
+      - name: Build with Maven (including tests)
+        run: ./mvnw clean package
+        working-directory: ./api
+
+      - name: Run tests
+        run: ./mvnw test
+        working-directory: ./api
+
+      - name: Stop Docker dependencies
+        run: docker-compose down
+        working-directory: ./api
