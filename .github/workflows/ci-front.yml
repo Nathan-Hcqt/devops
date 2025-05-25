@@ -35,18 +35,32 @@ jobs:
 
     # Install dependencies
       - name: Install dependencies
-        run: npm ci
-        working-directory: ./doodlestudent-main/front
-
-    # Test Angular app
-      - name: Run Angular tests
-        run: npm run test -- --watch=false --browsers=ChromeHeadless
+        run: npm install
         working-directory: ./doodlestudent-main/front
         
-    # Build Angular app
-      - name: Build Angular app
-        run: npm run build -- --prod
+    # Development build
+      - name: Build for development
+        run: npm run build -- --configuration development
         working-directory: ./doodlestudent-main/front
+    
+    # Build 
+      - name: Build the project
+        run : ng build 
+        working-directory: ./doodlestudent-main/front
+    
+    # Run tests
+      - name: Running unit tests 
+        run : ng test 
+        working-directory: ./doodlestudent-main/front
+      
+    # Stop the server
+      - name: Stop the server
+        run: npm stop
+        working-directory: ./doodlestudent-main/front
+    
+    
+
+    
     
     
     
