@@ -1,10 +1,9 @@
 name: Backend CI/CD - Quarkus
 
-# Déclenchement sur push/PR vers main (répertoires api/ ou workflow modifié)
 on:
   push:
     branches: [ main ]
-    paths:
+    paths: 
       - 'api/**'
       - '.github/workflows/ci-back.yml'
   pull_request:
@@ -18,63 +17,36 @@ env:
   MAVEN_OPTS: '-Xmx1024m'
 
 jobs:
-  integration-test:
-    name: Tests & Dev Mode Quarkus
+  test:
+    name: Tests Backend
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
-      # 1. Récupérer le code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Installer Java 17
       - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
           cache: maven
 
-      # 3. Lancer les services Docker (docker-compose.yml à la racine)
-      - name: Start Docker Compose services
-        uses: docker/compose-action@v2
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
         with:
-          # detache les containers et poursuit le job
-          run: up --detach
-          # Timeout augmenté si nécessaire
-          timeout: 120s
-
-      # 4. Attendre que Quarkus démarre et soit joignable
-      #    (optionnel : on peut remplacer par un script de health-check plus robuste)
-      - name: Wait for Quarkus dev mode
-        run: |
-          echo "Waiting for Quarkus to be up…"
-          for i in $(seq 1 30); do
-            if curl --silent --fail http://localhost:8080/q/health; then
-              echo "✔ Quarkus is up!"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "❌ Quarkus did not start in time."
-          exit 1
-
-      # 5. Compiler en mode dev (live-coding) et lancer les tests d’intégration
-      - name: Compile & Run in Dev Mode
-        working-directory: ./api
-        run: |
-          # cf. tutoriel : ./mvnw compile quarkus:dev
-          # ici on compile et on démarre Quarkus en mode dev
-          ./mvnw compile quarkus:dev --batch-mode \
-            -Dquarkus.http.host=0.0.0.0 \
-            -Dquarkus.http.port=8080 &
-
-          # On attend la fin du build, puis on lance les tests (si besoins)
-          wait $!
-
-      # 6. Shutdown des services
-      - name: Stop Docker Compose
-        if: always()
-        uses: docker/compose-action@v2
-        with:
-          run: down
+          path: ~/.m2
