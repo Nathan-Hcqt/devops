@@ -1,0 +1,51 @@
+name: Deploy Application
+
+on:
+  workflow_run:
+    workflows: ["Backend CI/CD - Quarkus", "Frontend CI/CD - Angular"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-docker-image
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-docker-image
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load Docker images
+        run: |
+          docker load < backend-image.tar
+          docker load < frontend-image.tar
+          docker tag quarkus-app:${{ github.sha }} quarkus-app:latest
+          docker tag angular-app:${{ github.sha }} angular-app:latest
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker-compose -f docker-compose.prod.yml up -d
+
+      - name: Health check
+        run: |
+          timeout 300 bash -c 'until curl -f http://localhost:8080/q/health; do sleep 5; done'
+          timeout 300 bash -c 'until curl -f http://localhost:4200; do sleep 5; done'
+
+      - name: Notify deployment success
+        if: success()
+        run: echo "🚀 Deployment successful!"

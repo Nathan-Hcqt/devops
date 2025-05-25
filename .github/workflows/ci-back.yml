@@ -1,42 +1,121 @@
-name: CI Back Quarkus
+name: Backend CI/CD - Quarkus
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
+    paths: 
+      - 'api/**'
+      - '.github/workflows/ci-back.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'api/**'
   workflow_dispatch:
 
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx1024m'
+
 jobs:
-  build:
+  test:
+    name: Tests Backend
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
           cache: maven
 
-      - name: Start Docker dependencies
-        run: docker-compose up -d
-        working-directory: ./doodlestudent-main/api
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-      - name: Wait for services (sleep)
-        run: sleep 15
-
-      - name: Build with Maven (including tests)
-        run: ./mvnw clean package
-        working-directory: ./api
+      - name: Verify Maven wrapper
+        run: |
+          cd api
+          chmod +x mvnw
 
       - name: Run tests
-        run: ./mvnw test
-        working-directory: ./api
+        run: |
+          cd api
+          ./mvnw clean test -Dquarkus.datasource.jdbc.url=jdbc:mysql://localhost:3306/testdb
+        env:
+          QUARKUS_DATASOURCE_USERNAME: root
+          QUARKUS_DATASOURCE_PASSWORD: root
 
-      - name: Stop Docker dependencies
-        run: docker-compose down
-        working-directory: ./api
+      - name: Generate test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Backend Tests
+          path: api/target/surefire-reports/*.xml
+          reporter: java-junit
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-backend
+          path: |
+            api/target/surefire-reports/
+            api/target/site/jacoco/
+
+  build:
+    name: Build Backend
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build application
+        run: |
+          cd api
+          ./mvnw clean package -DskipTests
+
+      - name: Build Docker image
+        run: |
+          cd api
+          docker build -f src/main/docker/Dockerfile.jvm -t quarkus-app:${{ github.sha }} .
+
+      - name: Save Docker image
+        run: |
+          docker save quarkus-app:${{ github.sha }} > backend-image.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-docker-image
+          path: backend-image.tar

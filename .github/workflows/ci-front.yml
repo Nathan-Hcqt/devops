@@ -1,32 +1,104 @@
-name: CI Front Angular
+name: Frontend CI/CD - Angular
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
+    paths: 
+      - 'front/**'
+      - '.github/workflows/ci-front.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'front/**'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
 
 jobs:
-  build:
+  test:
+    name: Tests Frontend
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: front/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: ./front
+        run: |
+          cd front
+          npm ci
 
-      - name: Build Angular app
-        run: npm run build --if-present
-        working-directory: ./front
+      - name: Run linting
+        run: |
+          cd front
+          npm run lint
 
-      - name: Run tests
-        run: npm test -- --watch=false --browsers=ChromeHeadless
-        working-directory: ./front
+      - name: Run unit tests with coverage
+        run: |
+          cd front
+          npm run test -- --no-watch --code-coverage --browsers=ChromeHeadless
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./front/coverage/
+          flags: frontend
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-frontend
+          path: |
+            front/coverage/
+            front/test-results/
+
+  build:
+    name: Build Frontend
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: front/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd front
+          npm ci
+
+      - name: Build for production
+        run: |
+          cd front
+          npm run build -- --configuration=production
+
+      - name: Build Docker image
+        run: |
+          cd front
+          docker build -t angular-app:${{ github.sha }} .
+
+      - name: Save Docker image
+        run: |
+          docker save angular-app:${{ github.sha }} > frontend-image.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-docker-image
+          path: frontend-image.tar
