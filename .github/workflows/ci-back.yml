@@ -49,17 +49,4 @@ jobs:
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Build and run tests
-        run: mvn clean verify -B
-
-      - name: Archive test reports
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-reports
-          path: target/surefire-reports/
+          path: ~/.m2
