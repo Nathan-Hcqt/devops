@@ -4,11 +4,11 @@ DoodleStudent est une application collaborative, pensée pour simplifier l’org
 Cette application a été prise comme base intitiale pour notre projet “Software Bots in Software Engineering”, terme désignant un agent logiciel autonome, capable d’automatiser des tâches répétitives, d’interagir avec les utilisateurs et d’améliorer l’efficacité des processus collaboratifs.
 
 
-## L’architecture technique de DoodleStudent repose sur :
+## L’architecture technique de DoodleStudent
 
-## Backend : 
+## Backend
 Développé avec Quarkus (Java), il gère la logique métier, l’accès aux données (MySQL), l’authentification, la gestion des sondages, des utilisateurs, des préférences et des commentaires.
-## Frontend : 
+## Frontend 
 Construit avec Angular, il offre une interface utilisateur moderne, réactive et accessible, permettant à chaque membre du groupe de participer facilement aux sondages et discussions.
 Services complémentaires : intégration d’Etherpad pour la coédition de texte, et d’un serveur mail pour les notifications automatiques.
 
@@ -19,7 +19,7 @@ Ces workflows assurent que chaque contribution respecte les standards de qualit�
 Les résultats des builds et des tests sont visibles en temps réel dans l’onglet "Actions" du dépôt GitHub, permettant ainsi une meilleure collaboration, la transparence et la réactivité de l’équipe.
 L’intégration de GitHub Actions apporte de nombreux bénéfices :
 
-## Automatisation : 
+## Automatisation 
 Plus besoin de lancer manuellement les tests ou les builds, tout est fait automatiquement à chaque modification.
 Qualité : chaque commit est validé par une série de tests, ce qui limite les régressions et garantit la robustesse du projet.
 Collaboration : chaque membre de l’équipe est informé en temps réel de l’état du projet, ce qui facilite la gestion des contributions et la résolution rapide des problèmes.
@@ -31,11 +31,11 @@ Collaboration : chaque membre de l’équipe est informé en temps réel de l�
 
 L’objectif de GitHub Actions est donc de réaliser des tests, la construction d’un projet, son déploiement ou tout autre script que l’on veut exécuter lors d’actions précises comme un push ou un pull request.
 
-## Structure du projet : 
+## Structure du projet
 
 Afin de mettre en place GitHub Actions nous devons créer un dossier .github/workflows/ à la racine du projet. Dans ce dossier nous stockerons tous les fichiers de workflows en .yml ou .yaml. Nous avons utilisé dans le projet deux fichiers : ci-back.yml et ci-front.yml qui sont voués à tester le back Quarkus et le front Angular du projet Doodle fournit.
 
-## Le fichier ci-back.yml : 
+## Le fichier ci-back.yml 
 
 
 Dans ce fichier nous avons tout d’abord l’en-tête avec le nom du workflow suivit par le section on qui déclenche le workflow selon les conditions voulue. Ici il est déclenché lorsqu'un push est effectué avec un modification  dans le dossier api du backend ou une modification de ce même fichier. Il est aussi déclenché lors d’une pull request ciblant la branche main. La balise workflow_dispatch: permet de le lancer manuellement depuis GitHub
@@ -144,11 +144,12 @@ Stop the application
 
 Avec ce fichier workflow on va donc initialiser l’application backend sur une machine Ubuntu à chaque push ou pull request et effectuer des tests unitaires. Cela permet de vérifier le bon fonctionnement du backend après chaque modification.
 
-Le fichier ci-front.yml : 
-name: CI Front Angular
+## Le fichier ci-front.yml 
+
+ name: CI Front Angular
 
 
-on:
+ on:
   push:
     branches: [ main ]
     paths:
@@ -161,7 +162,7 @@ on:
   workflow_dispatch:
 
 
-jobs:
+ jobs:
   test:
     name: Tests Front Angular
     runs-on: ubuntu-latest
