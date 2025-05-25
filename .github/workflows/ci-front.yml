@@ -26,12 +26,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: ./doodlestudent-main/front
+
+      - name: Test Angular app
+        run: npm run test :ci --if-exists
 
       - name: Build Angular app
-        run: npm start --if-exists
-        working-directory: ./doodlestudent-main/front
+        run: npm run build --if-exists
 
       - name: Run tests
         run: npm test -- --watch=false --browsers=ChromeHeadless
-        working-directory: ./doodlestudent-main/front
