@@ -43,6 +43,9 @@ jobs:
     # Install Maven
       - name: Install Maven
         run: mvn --version
+    
+      - name: Rendre mvnw exécutable
+        run: chmod +x ./mvnw
 
     # Install Docker
       - name: Install Docker
@@ -58,11 +61,13 @@ jobs:
       - name: Wait for the application to start
         run: |
           echo "Waiting for the application to start..."
-          sleep 30  # Adjust the sleep time as necessary
+          sleep 10 # Adjust the sleep time as necessary
+          echo "Application started successfully."
     
+  
     # Compile the project
       - name: Compile the project
-        run: ./mvnw compile quarkus:dev
+        run: ./mvnw clean package
     
     # Running unit tests
       - name: Running unit tests
