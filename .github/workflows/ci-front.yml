@@ -48,10 +48,5 @@ jobs:
         run: npm run build -- --prod
         working-directory: ./doodlestudent-main/front
     
-    # Upload test results
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: angular-test-results
     
     
