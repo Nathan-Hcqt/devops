@@ -43,7 +43,7 @@ jobs:
         
     # Build the project
       - name: Build the project
-        run: npx ng build --configuration development
+        run: npx ng build
       
     # Running unit tests
       - name: Running unit tests 
