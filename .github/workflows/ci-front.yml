@@ -3,9 +3,14 @@ name: CI Front Angular
 on:
   push:
     branches: [ main ]
+    paths: 
+      - 'front/**'
+      - '.github/workflows/ci-front.yml'
   pull_request:
     branches: [ main ]
-
+    paths:
+      - 'front/**'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
