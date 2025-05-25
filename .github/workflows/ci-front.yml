@@ -12,10 +12,6 @@ on:
       - 'front/**'
   workflow_dispatch:
 
-env:
-  JAVA_VERSION: '17'
-
-
 jobs:
   test:
     name: Tests Front Angular

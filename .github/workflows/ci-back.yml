@@ -15,38 +15,61 @@ on:
 env:
   JAVA_VERSION: '17'
   MAVEN_OPTS: '-Xmx1024m'
+  DOCKER: 'docker.io'
+  DOCKER_COMPOSE: 'docker-compose'
 
 jobs:
   test:
     name: Tests Backend
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testdb
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    defaults:
+      run:
+        working-directory: ./doodlestudent-main/api
 
     steps:
+
+    # Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+    # Set up Java environment
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-          cache: maven
+          cache: 'maven'
+      
+    # Install Maven
+      - name: Install Maven
+        run: mvn --version
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
+    # Install Docker
+      - name: Install Docker
+        uses: docker/setup-buildx-action@v2
         with:
-          path: ~/.m2
+          version: 'latest'
+    
+    # Running the application in dev mode 
+      - name : Running the application in dev mode
+        run: docker-compose up --detach
+    
+    # Wait the correct start of the application
+      - name: Wait for the application to start
+        run: |
+          echo "Waiting for the application to start..."
+          sleep 30  # Adjust the sleep time as necessary
+    
+    # Compile the project
+      - name: Compile the project
+        run: ./mvnw compile quarkus:dev
+    
+    # Running unit tests
+      - name: Running unit tests
+        run: ./mvnw test
+    
+    # Stop the application
+      - name: Stop the application
+        run: docker-compose down
+    
+    
