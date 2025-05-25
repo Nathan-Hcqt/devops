@@ -21,6 +21,10 @@ jobs:
     name: Tests Front Angular
     runs-on: ubuntu-latest
 
+    defaults:
+          run:
+            working-directory: ./doodlestudent-main/front
+
     steps:
 
     # Checkout code
@@ -35,30 +39,24 @@ jobs:
 
     # Install dependencies
       - name: Install dependencies
-        run: npm install
-        working-directory: ./doodlestudent-main/front
+        run: npm ci
         
-    # Development build
-      - name: Build for development
-        run: npm run build -- --configuration development
-        working-directory: ./doodlestudent-main/front
-    
-    # Build 
+    # Build the project
       - name: Build the project
-        run : ng build 
-        working-directory: ./doodlestudent-main/front
-    
-    # Run tests
-      - name: Running unit tests 
-        run : ng test 
-        working-directory: ./doodlestudent-main/front
+        run: npx ng build --configuration development
       
-    # Stop the server
-      - name: Stop the server
-        run: npm stop
-        working-directory: ./doodlestudent-main/front
+    # Running unit tests
+      - name: Running unit tests 
+        run : npx ng test --watch=false --browsers=ChromeHeadless
+
+    # Uploading test results
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: doodlestudent-main/front/test-results 
+      
     
-    
+
 
     
     
